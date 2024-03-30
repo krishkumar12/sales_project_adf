@@ -1,0 +1,15 @@
+{
+	"name": "pl-raw-to-curated",
+	"properties": {
+		"variables": {
+			"pipelineid": {
+				"type": "String",
+				"defaultValue": "@pipeline().RunId"
+			}
+		},
+		"folder": {
+			"name": "pl-raw-to-curated"
+		},
+		"annotations": []
+	}
+}
