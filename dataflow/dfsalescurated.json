@@ -1,0 +1,41 @@
+{
+	"name": "dfsalescurated",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dssalesrawstaging",
+						"type": "DatasetReference"
+					},
+					"name": "salesstaging"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dssalescurated",
+						"type": "DatasetReference"
+					},
+					"name": "sinksalescur"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> salesstaging",
+				"salesstaging sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinksalescur"
+			]
+		}
+	}
+}
