@@ -14,6 +14,10 @@
 		"lsstorageadf_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://salesprojectadf.dfs.core.windows.net/"
+		},
+		"trigger1_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/f6293421-863c-4786-92ba-57aa9850c58d/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/salesprojectadf"
 		}
 	},
 	"variables": {
@@ -924,6 +928,37 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/dssalesrawstaging')]",
 				"[concat(variables('factoryId'), '/datasets/dssalescurated')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl-copy-ext-to-raw",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/data-ext-landing/blobs/sales/",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trigger1_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
 			]
 		}
 	]

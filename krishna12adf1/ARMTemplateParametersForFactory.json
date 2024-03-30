@@ -10,6 +10,9 @@
 		},
 		"lsstorageadf_properties_typeProperties_url": {
 			"value": "https://salesprojectadf.dfs.core.windows.net/"
+		},
+		"trigger1_properties_typeProperties_scope": {
+			"value": "/subscriptions/f6293421-863c-4786-92ba-57aa9850c58d/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/salesprojectadf"
 		}
 	}
 }
