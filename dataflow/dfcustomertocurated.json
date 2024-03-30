@@ -3,23 +3,11 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [
-				{
-					"dataset": {
-						"referenceName": "dscustomerstaging",
-						"type": "DatasetReference"
-					},
-					"name": "customerstaging"
-				}
-			],
+			"sources": [],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     limit: 0,",
-				"     ignoreNoFilesFound: false,",
-				"     moveFiles: ['/staging/customer','processed']) ~> customerstaging"
+				""
 			]
 		}
 	}
