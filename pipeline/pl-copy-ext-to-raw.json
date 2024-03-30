@@ -139,8 +139,130 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "copy-product-ext-raw",
+				"description": "copy product from ext landing to raw container",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "copy-sales-ext-raw",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "data-ext-landing/product/"
+					},
+					{
+						"name": "Destination",
+						"value": "data-raw-bronze/staging/product/"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"wildcardFolderPath": "product",
+							"wildcardFileName": "product*.csv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".csv"
+						}
+					},
+					"enableStaging": false,
+					"parallelCopies": 1,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "productid",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "productid",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "productname",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "productname",
+									"type": "String",
+									"physicalType": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "productcategory",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "productcategory",
+									"type": "String",
+									"physicalType": "String"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "dsproductcsv",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "dsproductstaging",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
+		"variables": {
+			"pipelineid": {
+				"type": "Array"
+			}
+		},
 		"folder": {
 			"name": "pl-copy-data-ext-to-raw"
 		},
