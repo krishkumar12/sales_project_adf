@@ -38,7 +38,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dssalesext')]",
+			"name": "[concat(parameters('factoryName'), '/dscustomercsv')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -51,7 +51,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "sales",
+						"folderPath": "customer",
 						"fileSystem": "data-ext-landing"
 					},
 					"columnDelimiter": ",",
@@ -61,27 +61,19 @@
 				},
 				"schema": [
 					{
-						"name": "SaleID",
-						"type": "String"
-					},
-					{
 						"name": "CustomerID",
 						"type": "String"
 					},
 					{
-						"name": "ProductID",
+						"name": "First Name",
 						"type": "String"
 					},
 					{
-						"name": "Quantity",
+						"name": "Last Name",
 						"type": "String"
 					},
 					{
-						"name": "SaleDate",
-						"type": "String"
-					},
-					{
-						"name": "Revenue",
+						"name": "Gender",
 						"type": "String"
 					}
 				]
@@ -91,7 +83,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dssalesrawstaging')]",
+			"name": "[concat(parameters('factoryName'), '/dscustomerstaging')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -104,7 +96,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "staging/sales",
+						"folderPath": "staging/customer",
 						"fileSystem": "data-raw-bronze"
 					},
 					"columnDelimiter": ",",
@@ -175,7 +167,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dscustomercsv')]",
+			"name": "[concat(parameters('factoryName'), '/dssalesext')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -188,7 +180,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "customer",
+						"folderPath": "sales",
 						"fileSystem": "data-ext-landing"
 					},
 					"columnDelimiter": ",",
@@ -198,19 +190,27 @@
 				},
 				"schema": [
 					{
+						"name": "SaleID",
+						"type": "String"
+					},
+					{
 						"name": "CustomerID",
 						"type": "String"
 					},
 					{
-						"name": "First Name",
+						"name": "ProductID",
 						"type": "String"
 					},
 					{
-						"name": "Last Name",
+						"name": "Quantity",
 						"type": "String"
 					},
 					{
-						"name": "Gender",
+						"name": "SaleDate",
+						"type": "String"
+					},
+					{
+						"name": "Revenue",
 						"type": "String"
 					}
 				]
@@ -220,7 +220,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dscustomerstaging')]",
+			"name": "[concat(parameters('factoryName'), '/dssalesrawstaging')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -233,7 +233,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "staging/customer",
+						"folderPath": "staging/sales",
 						"fileSystem": "data-raw-bronze"
 					},
 					"columnDelimiter": ",",
@@ -664,6 +664,37 @@
 				"[concat(variables('factoryId'), '/datasets/dsproductstaging')]",
 				"[concat(variables('factoryId'), '/datasets/dscustomercsv')]",
 				"[concat(variables('factoryId'), '/datasets/dscustomerstaging')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trg-copy-ext-raw')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl-copy-ext-to-raw",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 12,
+						"startTime": "2024-03-30T09:54:00",
+						"endTime": "2024-03-31T09:55:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
 			]
 		}
 	]
