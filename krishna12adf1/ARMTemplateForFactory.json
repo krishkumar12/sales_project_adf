@@ -539,6 +539,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl-raw-to-curated')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "convertsalestoparquet",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dfsalescurated",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"salesstaging": {},
+									"sinksalescur": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "None",
+							"cacheSinks": {
+								"firstRowOnly": true
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"pipelineid": {
+						"type": "String",
+						"defaultValue": "@pipeline().RunId"
+					}
+				},
+				"folder": {
+					"name": "pl-raw-to-curated"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dfsalescurated')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dscustomercsv')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -660,6 +718,31 @@
 					"escapeChar": "\\",
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dssalescurated')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "sales",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
 				},
 				"schema": []
 			},
@@ -794,6 +877,53 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dfsalescurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dssalesrawstaging",
+								"type": "DatasetReference"
+							},
+							"name": "salesstaging"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dssalescurated",
+								"type": "DatasetReference"
+							},
+							"name": "sinksalescur"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> salesstaging",
+						"salesstaging sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinksalescur"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dssalesrawstaging')]",
+				"[concat(variables('factoryId'), '/datasets/dssalescurated')]"
 			]
 		}
 	]
