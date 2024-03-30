@@ -1,0 +1,24 @@
+{
+	"name": "dfcustomercurated",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dscustomerstaging",
+						"type": "DatasetReference"
+					},
+					"name": "customerstaging"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> customerstaging"
+			]
+		}
+	}
+}
