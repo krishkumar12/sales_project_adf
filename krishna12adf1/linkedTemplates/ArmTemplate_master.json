@@ -15,10 +15,6 @@
 			"type": "string",
 			"defaultValue": "https://salesprojectadf.dfs.core.windows.net/"
 		},
-		"trg_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/f6293421-863c-4786-92ba-57aa9850c58d/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/salesprojectadf"
-		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -51,9 +47,6 @@
 					},
 					"lsstorageadf_properties_typeProperties_url": {
 						"value": "[parameters('lsstorageadf_properties_typeProperties_url')]"
-					},
-					"trg_properties_typeProperties_scope": {
-						"value": "[parameters('trg_properties_typeProperties_scope')]"
 					}
 				}
 			},
