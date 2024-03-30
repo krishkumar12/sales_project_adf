@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "krishna12adf1"
+		},
+		"lsstorageadf_accountKey": {
+			"value": ""
+		},
+		"lsstorageadf_properties_typeProperties_url": {
+			"value": "https://salesprojectadf.dfs.core.windows.net/"
+		},
+		"trg_properties_typeProperties_scope": {
+			"value": "/subscriptions/f6293421-863c-4786-92ba-57aa9850c58d/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/salesprojectadf"
+		}
+	}
+}
