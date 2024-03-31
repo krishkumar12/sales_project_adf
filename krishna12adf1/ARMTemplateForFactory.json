@@ -619,7 +619,7 @@
 						}
 					},
 					{
-						"name": "Data",
+						"name": "covertproducttoparquet",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [
 							{
@@ -638,6 +638,15 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dfproductcurated",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"productstaging": {},
+									"sinkproductcurated": {}
+								}
+							},
 							"staging": {},
 							"compute": {
 								"coreCount": 8,
@@ -663,7 +672,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/dfsalescurated')]",
-				"[concat(variables('factoryId'), '/dataflows/dfcustomrcurated')]"
+				"[concat(variables('factoryId'), '/dataflows/dfcustomrcurated')]",
+				"[concat(variables('factoryId'), '/dataflows/dfproductcurated')]"
 			]
 		},
 		{
