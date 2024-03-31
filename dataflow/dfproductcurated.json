@@ -1,0 +1,54 @@
+{
+	"name": "dfproductcurated",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dsproductstaging",
+						"type": "DatasetReference"
+					},
+					"name": "productstaging"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dsproductcurated",
+						"type": "DatasetReference"
+					},
+					"name": "sinkproductcurated"
+				}
+			],
+			"transformations": [
+				{
+					"name": "distinctproduct"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          productid as string,",
+				"          productname as string,",
+				"          productcategory as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     purgeFiles: true) ~> productstaging",
+				"productstaging aggregate(groupBy(productid),",
+				"     productname = first(productname),",
+				"          productcategory = first(productcategory)) ~> distinctproduct",
+				"distinctproduct sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkproductcurated"
+			]
+		}
+	}
+}
