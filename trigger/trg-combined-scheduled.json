@@ -1,0 +1,25 @@
+{
+	"name": "trg-combined-scheduled",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl-raw-curated-gold",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 30,
+				"startTime": "2024-03-31T16:40:00",
+				"endTime": "2024-03-31T18:18:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
