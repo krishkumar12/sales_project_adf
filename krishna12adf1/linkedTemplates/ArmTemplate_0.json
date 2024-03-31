@@ -1323,6 +1323,95 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl-raw-curated-gold')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "plexttoraw",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl-copy-ext-to-raw",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": false,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "pl-raw-curated",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "plexttoraw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl-raw-to-curated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": false,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]",
+				"[concat(variables('factoryId'), '/pipelines/pl-raw-to-curated')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trg-combined-scheduled')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl-raw-curated-gold",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 30,
+						"startTime": "2024-03-31T16:40:00",
+						"endTime": "2024-03-31T18:18:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-raw-curated-gold')]"
+			]
 		}
 	]
 }
