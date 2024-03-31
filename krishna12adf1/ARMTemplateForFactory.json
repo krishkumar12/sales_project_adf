@@ -617,6 +617,34 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "Data",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "convertcustomertoparquet",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -1044,7 +1072,8 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> salesstaging",
+						"     ignoreNoFilesFound: false,",
+						"     purgeFiles: true) ~> salesstaging",
 						"salesstaging sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
@@ -1114,7 +1143,8 @@
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> customerstaging",
+						"     ignoreNoFilesFound: false,",
+						"     purgeFiles: true) ~> customerstaging",
 						"customerstaging aggregate(groupBy(CustomerID),",
 						"     FirstName = first(FirstName),",
 						"          LastName = first(LastName),",
@@ -1129,7 +1159,8 @@
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkgoodrows",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkgoodrows",
 						"filtercustomer@badcustomerid sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
@@ -1137,7 +1168,8 @@
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkbadrows"
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkbadrows"
 					]
 				}
 			},
@@ -1188,6 +1220,91 @@
 						"type": "AzureBlobFSLocation",
 						"folderPath": "rejected/customer",
 						"fileSystem": "data-raw-bronze"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dfproductcurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dsproductstaging",
+								"type": "DatasetReference"
+							},
+							"name": "productstaging"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dsproductcurated",
+								"type": "DatasetReference"
+							},
+							"name": "sinkproductcurated"
+						}
+					],
+					"transformations": [
+						{
+							"name": "distinctproduct"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          productid as string,",
+						"          productname as string,",
+						"          productcategory as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     purgeFiles: true) ~> productstaging",
+						"productstaging aggregate(groupBy(productid),",
+						"     productname = first(productname),",
+						"          productcategory = first(productcategory)) ~> distinctproduct",
+						"distinctproduct sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkproductcurated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dsproductstaging')]",
+				"[concat(variables('factoryId'), '/datasets/dsproductcurated')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dsproductcurated')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "product",
+						"fileSystem": "data-curated-silver"
 					},
 					"compressionCodec": "snappy"
 				},
