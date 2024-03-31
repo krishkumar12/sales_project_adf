@@ -1,0 +1,38 @@
+{
+	"name": "dfcustomrcurated",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dscustomerstaging",
+						"type": "DatasetReference"
+					},
+					"name": "customerstaging"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "distinctcustomer"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustomerID as string,",
+				"          {First Name} as string,",
+				"          {Last Name} as string,",
+				"          Gender as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> customerstaging",
+				"customerstaging aggregate(groupBy(CustomerID),",
+				"     {First Name} = first({First Name}),",
+				"          {Last Name} = first({Last Name}),",
+				"          Gender = first(Gender)) ~> distinctcustomer"
+			]
+		}
+	}
+}
