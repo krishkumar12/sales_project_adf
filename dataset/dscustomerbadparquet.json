@@ -1,0 +1,20 @@
+{
+	"name": "dscustomerbadparquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "rejected/customer",
+				"fileSystem": "data-raw-bronze"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

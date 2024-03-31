@@ -21,6 +21,10 @@
 					"name": "sinkgoodrows"
 				},
 				{
+					"dataset": {
+						"referenceName": "dscustomerbadparquet",
+						"type": "DatasetReference"
+					},
 					"name": "sinkbadrows"
 				}
 			],
@@ -58,6 +62,10 @@
 				"     skipDuplicateMapOutputs: true) ~> sinkgoodrows",
 				"filtercustomer@badcustomerid sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sinkbadrows"
 			]
