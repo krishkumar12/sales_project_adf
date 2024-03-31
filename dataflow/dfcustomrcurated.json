@@ -16,6 +16,9 @@
 			"transformations": [
 				{
 					"name": "distinctcustomer"
+				},
+				{
+					"name": "goodrows"
 				}
 			],
 			"scriptLines": [
@@ -31,7 +34,9 @@
 				"customerstaging aggregate(groupBy(CustomerID),",
 				"     {First Name} = first({First Name}),",
 				"          {Last Name} = first({Last Name}),",
-				"          Gender = first(Gender)) ~> distinctcustomer"
+				"          Gender = first(Gender)) ~> distinctcustomer",
+				"distinctcustomer split(isInteger(CustomerID),",
+				"     disjoint: false) ~> goodrows@(goodcustomerid, badcustomerid)"
 			]
 		}
 	}
