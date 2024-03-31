@@ -363,8 +363,7 @@
 									},
 									{
 										"source": {
-											"name": "First Name",
-											"type": "String",
+											"name": "FirstName",
 											"physicalType": "String"
 										},
 										"sink": {
@@ -374,8 +373,7 @@
 									},
 									{
 										"source": {
-											"name": "Last Name",
-											"type": "String",
+											"name": "LastName",
 											"physicalType": "String"
 										},
 										"sink": {
