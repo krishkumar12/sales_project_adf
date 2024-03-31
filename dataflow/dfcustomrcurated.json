@@ -42,8 +42,8 @@
 			"scriptLines": [
 				"source(output(",
 				"          CustomerID as string,",
-				"          {First Name} as string,",
-				"          {Last Name} as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
 				"          Gender as string",
 				"     ),",
 				"     allowSchemaDrift: true,",

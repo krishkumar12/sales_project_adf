@@ -24,11 +24,11 @@
 				"type": "String"
 			},
 			{
-				"name": "First Name",
+				"name": "FirstName",
 				"type": "String"
 			},
 			{
-				"name": "Last Name",
+				"name": "LastName",
 				"type": "String"
 			},
 			{
