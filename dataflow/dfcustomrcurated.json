@@ -34,6 +34,9 @@
 				},
 				{
 					"name": "filtercustomer"
+				},
+				{
+					"name": "derivedColumn1"
 				}
 			],
 			"scriptLines": [
@@ -50,8 +53,9 @@
 				"     {First Name} = first({First Name}),",
 				"          {Last Name} = first({Last Name}),",
 				"          Gender = first(Gender)) ~> distinctcustomer",
-				"distinctcustomer split(isInteger(CustomerID),",
+				"derivedColumn1 split(isInteger(CustomerID),",
 				"     disjoint: false) ~> filtercustomer@(goodcustomerid, badcustomerid)",
+				"distinctcustomer derive(Gender = iif(isNull(Gender),'Unknown Gender',Gender)) ~> derivedColumn1",
 				"filtercustomer@goodcustomerid sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
