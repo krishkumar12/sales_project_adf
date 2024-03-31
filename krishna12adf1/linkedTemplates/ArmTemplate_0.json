@@ -114,11 +114,11 @@
 						"type": "String"
 					},
 					{
-						"name": "First Name",
+						"name": "FirstName",
 						"type": "String"
 					},
 					{
-						"name": "Last Name",
+						"name": "LastName",
 						"type": "String"
 					},
 					{
@@ -326,6 +326,56 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dscustomercurated')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "customer",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dscustomerbadparquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "rejected/customer",
+						"fileSystem": "data-raw-bronze"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
@@ -675,8 +725,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "First Name",
-											"type": "String",
+											"name": "FirstName",
 											"physicalType": "String"
 										}
 									},
@@ -687,8 +736,7 @@
 											"physicalType": "String"
 										},
 										"sink": {
-											"name": "Last Name",
-											"type": "String",
+											"name": "LastName",
 											"physicalType": "String"
 										}
 									},
@@ -905,6 +953,91 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dfcustomrcurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dscustomerstaging",
+								"type": "DatasetReference"
+							},
+							"name": "customerstaging"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dscustomercurated",
+								"type": "DatasetReference"
+							},
+							"name": "sinkgoodrows"
+						},
+						{
+							"dataset": {
+								"referenceName": "dscustomerbadparquet",
+								"type": "DatasetReference"
+							},
+							"name": "sinkbadrows"
+						}
+					],
+					"transformations": [
+						{
+							"name": "distinctcustomer"
+						},
+						{
+							"name": "filtercustomer"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as string,",
+						"          FirstName as string,",
+						"          LastName as string,",
+						"          Gender as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> customerstaging",
+						"customerstaging aggregate(groupBy(CustomerID),",
+						"     FirstName = first(FirstName),",
+						"          LastName = first(LastName),",
+						"          Gender = first(Gender)) ~> distinctcustomer",
+						"derivedColumn1 split(isInteger(CustomerID),",
+						"     disjoint: false) ~> filtercustomer@(goodcustomerid, badcustomerid)",
+						"distinctcustomer derive(Gender = iif(isNull(Gender),'Unknown Gender',Gender)) ~> derivedColumn1",
+						"filtercustomer@goodcustomerid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkgoodrows",
+						"filtercustomer@badcustomerid sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkbadrows"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dscustomerstaging')]",
+				"[concat(variables('factoryId'), '/datasets/dscustomercurated')]",
+				"[concat(variables('factoryId'), '/datasets/dscustomerbadparquet')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl-raw-to-curated')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -942,6 +1075,45 @@
 								"firstRowOnly": true
 							}
 						}
+					},
+					{
+						"name": "convertcustomertoparquet",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "convertsalestoparquet",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dfcustomrcurated",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"customerstaging": {},
+									"sinkgoodrows": {},
+									"sinkbadrows": {}
+								},
+								"linkedServiceParameters": {}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -959,7 +1131,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dfsalescurated')]"
+				"[concat(variables('factoryId'), '/dataflows/dfsalescurated')]",
+				"[concat(variables('factoryId'), '/dataflows/dfcustomrcurated')]"
 			]
 		},
 		{
