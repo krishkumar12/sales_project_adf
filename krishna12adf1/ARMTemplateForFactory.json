@@ -541,6 +541,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl-raw-curated-gold')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "plexttoraw",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl-copy-ext-to-raw",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": false,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "pl-raw-curated",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "plexttoraw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl-raw-to-curated",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": false,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]",
+				"[concat(variables('factoryId'), '/pipelines/pl-raw-to-curated')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl-raw-to-curated')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -607,8 +665,7 @@
 									"customerstaging": {},
 									"sinkgoodrows": {},
 									"sinkbadrows": {}
-								},
-								"linkedServiceParameters": {}
+								}
 							},
 							"staging": {},
 							"compute": {
@@ -677,6 +734,31 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dscustomerbadparquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "rejected/customer",
+						"fileSystem": "data-raw-bronze"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dscustomercsv')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -716,6 +798,31 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dscustomercurated')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "customer",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
@@ -787,6 +894,31 @@
 					"escapeChar": "\\",
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dsproductcurated')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "product",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
 				},
 				"schema": []
 			},
@@ -984,6 +1116,37 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/trg-combined-scheduled')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl-raw-curated-gold",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 30,
+						"startTime": "2024-03-31T16:44:00",
+						"endTime": "2024-03-31T18:18:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl-raw-curated-gold')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/trg-copy-ext-raw')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -1020,7 +1183,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"runtimeState": "Started",
+				"runtimeState": "Stopped",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -1043,62 +1206,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dfsalescurated')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "dssalesrawstaging",
-								"type": "DatasetReference"
-							},
-							"name": "salesstaging"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "dssalescurated",
-								"type": "DatasetReference"
-							},
-							"name": "sinksalescur"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          SaleID as string,",
-						"          CustomerID as string,",
-						"          ProductID as string,",
-						"          Quantity as string,",
-						"          SaleDate as string,",
-						"          Revenue as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     purgeFiles: true) ~> salesstaging",
-						"salesstaging sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinksalescur"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/dssalesrawstaging')]",
-				"[concat(variables('factoryId'), '/datasets/dssalescurated')]"
 			]
 		},
 		{
@@ -1190,56 +1297,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dscustomercurated')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "lsstorageadf",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "customer",
-						"fileSystem": "data-curated-silver"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dscustomerbadparquet')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "lsstorageadf",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "rejected/customer",
-						"fileSystem": "data-raw-bronze"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/dfproductcurated')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1300,117 +1357,59 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dsproductcurated')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/dfsalescurated')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "lsstorageadf",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
+				"type": "MappingDataFlow",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "product",
-						"fileSystem": "data-curated-silver"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl-raw-curated-gold')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "plexttoraw",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl-copy-ext-to-raw",
-								"type": "PipelineReference"
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dssalesrawstaging",
+								"type": "DatasetReference"
 							},
-							"waitOnCompletion": false,
-							"parameters": {}
+							"name": "salesstaging"
 						}
-					},
-					{
-						"name": "pl-raw-curated",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "plexttoraw",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl-raw-to-curated",
-								"type": "PipelineReference"
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dssalescurated",
+								"type": "DatasetReference"
 							},
-							"waitOnCompletion": false,
-							"parameters": {}
+							"name": "sinksalescur"
 						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]",
-				"[concat(variables('factoryId'), '/pipelines/pl-raw-to-curated')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/trg-combined-scheduled')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl-raw-curated-gold",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 30,
-						"startTime": "2024-03-31T16:40:00",
-						"endTime": "2024-03-31T18:18:00",
-						"timeZone": "India Standard Time"
-					}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          SaleID as string,",
+						"          CustomerID as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          SaleDate as string,",
+						"          Revenue as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     purgeFiles: true) ~> salesstaging",
+						"salesstaging sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinksalescur"
+					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-raw-curated-gold')]"
+				"[concat(variables('factoryId'), '/datasets/dssalesrawstaging')]",
+				"[concat(variables('factoryId'), '/datasets/dssalescurated')]"
 			]
 		}
 	]
