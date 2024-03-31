@@ -1,0 +1,20 @@
+{
+	"name": "dscustomercurated",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "customer",
+				"fileSystem": "data-curated-silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

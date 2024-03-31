@@ -12,13 +12,24 @@
 					"name": "customerstaging"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dscustomercurated",
+						"type": "DatasetReference"
+					},
+					"name": "sinkgoodrows"
+				},
+				{
+					"name": "sinkbadrows"
+				}
+			],
 			"transformations": [
 				{
 					"name": "distinctcustomer"
 				},
 				{
-					"name": "goodrows"
+					"name": "filtercustomer"
 				}
 			],
 			"scriptLines": [
@@ -36,7 +47,19 @@
 				"          {Last Name} = first({Last Name}),",
 				"          Gender = first(Gender)) ~> distinctcustomer",
 				"distinctcustomer split(isInteger(CustomerID),",
-				"     disjoint: false) ~> goodrows@(goodcustomerid, badcustomerid)"
+				"     disjoint: false) ~> filtercustomer@(goodcustomerid, badcustomerid)",
+				"filtercustomer@goodcustomerid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkgoodrows",
+				"filtercustomer@badcustomerid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkbadrows"
 			]
 		}
 	}
