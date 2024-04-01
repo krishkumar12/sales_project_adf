@@ -1,0 +1,23 @@
+{
+	"name": "dsgoldfastmovingproduct",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "fast-moving-product",
+				"fileSystem": "data-processed-gold"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

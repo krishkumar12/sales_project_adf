@@ -19,7 +19,15 @@
 					"name": "srcsilverproduct"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dsgoldfastmovingproduct",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "joinsalesproduct"
@@ -81,7 +89,15 @@
 				"     partitionBy('hash', 1)) ~> aggregate1",
 				"aggregate1 sort(desc(Revenue, true),",
 				"     desc(Quantity, true),",
-				"     partitionBy('hash', 1)) ~> sort1"
+				"     partitionBy('hash', 1)) ~> sort1",
+				"sort1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
