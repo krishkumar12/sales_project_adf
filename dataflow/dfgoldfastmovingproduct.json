@@ -20,7 +20,11 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "joinsalesproduct"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          SaleID as string,",
@@ -43,7 +47,13 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     format: 'parquet') ~> srcsilverproduct"
+				"     format: 'parquet') ~> srcsilverproduct",
+				"srcsilversales, srcsilverproduct join(srcsilversales@ProductID == srcsilverproduct@productid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     partitionBy('hash', 1),",
+				"     broadcast: 'auto')~> joinsalesproduct"
 			]
 		}
 	}
