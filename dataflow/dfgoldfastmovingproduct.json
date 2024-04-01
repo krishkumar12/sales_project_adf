@@ -9,7 +9,14 @@
 						"referenceName": "dssilversaleparquet",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "srcsilversales"
+				},
+				{
+					"dataset": {
+						"referenceName": "dssilverproductparquet",
+						"type": "DatasetReference"
+					},
+					"name": "srcsilverproduct"
 				}
 			],
 			"sinks": [],
@@ -27,7 +34,16 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet',",
-				"     partitionBy('hash', 1)) ~> source1"
+				"     partitionBy('hash', 1)) ~> srcsilversales",
+				"source(output(",
+				"          productid as string,",
+				"          productname as string,",
+				"          productcategory as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> srcsilverproduct"
 			]
 		}
 	}

@@ -1,0 +1,33 @@
+{
+	"name": "dssilverproductparquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "product",
+				"fileSystem": "data-curated-silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "productid",
+				"type": "UTF8"
+			},
+			{
+				"name": "productname",
+				"type": "UTF8"
+			},
+			{
+				"name": "productcategory",
+				"type": "UTF8"
+			}
+		]
+	}
+}
