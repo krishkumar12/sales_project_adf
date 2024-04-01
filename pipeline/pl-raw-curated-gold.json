@@ -40,6 +40,29 @@
 					},
 					"waitOnCompletion": false
 				}
+			},
+			{
+				"name": "pl-curated-gold",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl-raw-curated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl-curated-gold",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": false
+				}
 			}
 		],
 		"annotations": []
