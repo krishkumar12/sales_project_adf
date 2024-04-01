@@ -13,7 +13,11 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "totalsaleperday"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          SaleID as string,",
@@ -27,7 +31,9 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet',",
-				"     partitionBy('hash', 1)) ~> srcsales"
+				"     partitionBy('hash', 1)) ~> srcsales",
+				"srcsales aggregate(groupBy(SaleDate),",
+				"     Revenue = sum(Revenue)) ~> totalsaleperday"
 			]
 		}
 	}
