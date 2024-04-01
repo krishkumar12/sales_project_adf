@@ -417,6 +417,8 @@
 			{
 				"name": "delete-product-ext",
 				"type": "Delete",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "delete-sales-ext",
@@ -449,6 +451,8 @@
 			{
 				"name": "delete-customer-raw",
 				"type": "Delete",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "delete-product-ext",
