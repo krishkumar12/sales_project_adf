@@ -29,6 +29,9 @@
 				},
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "sort1"
 				}
 			],
 			"scriptLines": [
@@ -75,7 +78,9 @@
 				"          productcategory = first(productcategory),",
 				"          Quantity = sum(Quantity),",
 				"          Revenue = sum(Revenue),",
-				"     partitionBy('hash', 1)) ~> aggregate1"
+				"     partitionBy('hash', 1)) ~> aggregate1",
+				"aggregate1 sort(desc(Revenue, true),",
+				"     desc(Quantity, true)) ~> sort1"
 			]
 		}
 	}
