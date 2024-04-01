@@ -14,10 +14,6 @@
 		"lsstorageadf_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://salesprojectadf.dfs.core.windows.net/"
-		},
-		"trigger1_properties_typeProperties_scope": {
-			"type": "string",
-			"defaultValue": "/subscriptions/f6293421-863c-4786-92ba-57aa9850c58d/resourceGroups/rg1/providers/Microsoft.Storage/storageAccounts/salesprojectadf"
 		}
 	},
 	"variables": {
@@ -176,6 +172,34 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dsgoldfastmovingproduct')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "fast-moving-product",
+						"fileSystem": "data-processed-gold"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
@@ -401,6 +425,122 @@
 						"type": "String"
 					}
 				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dssilverproductparquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "product",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "productid",
+						"type": "UTF8"
+					},
+					{
+						"name": "productname",
+						"type": "UTF8"
+					},
+					{
+						"name": "productcategory",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dssilversalesparquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "sales",
+						"fileSystem": "data-curated-silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "SaleID",
+						"type": "UTF8"
+					},
+					{
+						"name": "CustomerID",
+						"type": "UTF8"
+					},
+					{
+						"name": "ProductID",
+						"type": "UTF8"
+					},
+					{
+						"name": "Quantity",
+						"type": "UTF8"
+					},
+					{
+						"name": "SaleDate",
+						"type": "UTF8"
+					},
+					{
+						"name": "Revenue",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dstotalsaleperday')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "lsstorageadf",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "total-sale-per-day",
+						"fileSystem": "data-processed-gold"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/lsstorageadf')]"
@@ -1009,6 +1149,178 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dfgoldfastmovingproduct')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dssilversalesparquet",
+								"type": "DatasetReference"
+							},
+							"name": "srcsilversales"
+						},
+						{
+							"dataset": {
+								"referenceName": "dssilverproductparquet",
+								"type": "DatasetReference"
+							},
+							"name": "srcsilverproduct"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dsgoldfastmovingproduct",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinsalesproduct"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "sort1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SaleID as string,",
+						"          CustomerID as string,",
+						"          ProductID as string,",
+						"          Quantity as integer,",
+						"          SaleDate as date,",
+						"          Revenue as decimal(10,0)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     partitionBy('hash', 1)) ~> srcsilversales",
+						"source(output(",
+						"          productid as string,",
+						"          productname as string,",
+						"          productcategory as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> srcsilverproduct",
+						"srcsilversales, srcsilverproduct join(srcsilversales@ProductID == srcsilverproduct@productid,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     partitionBy('hash', 1),",
+						"     broadcast: 'auto')~> joinsalesproduct",
+						"joinsalesproduct select(mapColumn(",
+						"          ProductID = srcsilversales@ProductID,",
+						"          Quantity,",
+						"          Revenue,",
+						"          productname,",
+						"          productcategory",
+						"     ),",
+						"     partitionBy('hash', 1),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 aggregate(groupBy(ProductID),",
+						"     productname = first(productname),",
+						"          productcategory = first(productcategory),",
+						"          Quantity = sum(Quantity),",
+						"          Revenue = sum(Revenue),",
+						"     partitionBy('hash', 1)) ~> aggregate1",
+						"aggregate1 sort(desc(Revenue, true),",
+						"     desc(Quantity, true),",
+						"     partitionBy('hash', 1)) ~> sort1",
+						"sort1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dssilversalesparquet')]",
+				"[concat(variables('factoryId'), '/datasets/dssilverproductparquet')]",
+				"[concat(variables('factoryId'), '/datasets/dsgoldfastmovingproduct')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dfgoldtotalsaleperday')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dssilversalesparquet",
+								"type": "DatasetReference"
+							},
+							"name": "srcsales"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "dstotalsaleperday",
+								"type": "DatasetReference"
+							},
+							"name": "sinktotalsaleperday"
+						}
+					],
+					"transformations": [
+						{
+							"name": "totalsaleperday"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SaleID as string,",
+						"          CustomerID as string,",
+						"          ProductID as string,",
+						"          Quantity as integer,",
+						"          SaleDate as date,",
+						"          Revenue as decimal(10,0)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet',",
+						"     partitionBy('hash', 1)) ~> srcsales",
+						"srcsales aggregate(groupBy(SaleDate),",
+						"     Revenue = toDecimal(sum(Revenue),8,2)) ~> totalsaleperday",
+						"totalsaleperday sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinktotalsaleperday"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dssilversalesparquet')]",
+				"[concat(variables('factoryId'), '/datasets/dstotalsaleperday')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dfproductcurated')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1066,348 +1378,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/dsproductstaging')]",
 				"[concat(variables('factoryId'), '/datasets/dsproductcurated')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dfsalescurated')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "dssalesrawstaging",
-								"type": "DatasetReference"
-							},
-							"name": "salesstaging"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "dssalescurated",
-								"type": "DatasetReference"
-							},
-							"name": "sinksalescur"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          SaleID as string,",
-						"          CustomerID as string,",
-						"          ProductID as string,",
-						"          Quantity as string,",
-						"          SaleDate as string,",
-						"          Revenue as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     purgeFiles: true) ~> salesstaging",
-						"salesstaging sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinksalescur"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/dssalesrawstaging')]",
-				"[concat(variables('factoryId'), '/datasets/dssalescurated')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl-raw-to-curated')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "convertsalestoparquet",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dfsalescurated",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"salesstaging": {},
-									"sinksalescur": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "None",
-							"cacheSinks": {
-								"firstRowOnly": true
-							}
-						}
-					},
-					{
-						"name": "convertcustomertoparquet",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "convertsalestoparquet",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dfcustomrcurated",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"customerstaging": {},
-									"sinkgoodrows": {},
-									"sinkbadrows": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "covertproducttoparquet",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "convertcustomertoparquet",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dfproductcurated",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"productstaging": {},
-									"sinkproductcurated": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"variables": {
-					"pipelineid": {
-						"type": "String",
-						"defaultValue": "@pipeline().RunId"
-					}
-				},
-				"folder": {
-					"name": "pl-raw-to-curated"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dfsalescurated')]",
-				"[concat(variables('factoryId'), '/dataflows/dfcustomrcurated')]",
-				"[concat(variables('factoryId'), '/dataflows/dfproductcurated')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/trg-copy-ext-raw')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl-copy-ext-to-raw",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 12,
-						"startTime": "2024-03-30T15:50:00",
-						"endTime": "2024-03-30T16:22:00",
-						"timeZone": "India Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/trigger1')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl-copy-ext-to-raw",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "BlobEventsTrigger",
-				"typeProperties": {
-					"blobPathBeginsWith": "/data-ext-landing/blobs/sales/",
-					"blobPathEndsWith": ".csv",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('trigger1_properties_typeProperties_scope')]",
-					"events": [
-						"Microsoft.Storage.BlobCreated"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl-raw-curated-gold')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "plexttoraw",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl-copy-ext-to-raw",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": false,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "pl-raw-curated",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "plexttoraw",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "pl-raw-to-curated",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": false,
-							"parameters": {}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-copy-ext-to-raw')]",
-				"[concat(variables('factoryId'), '/pipelines/pl-raw-to-curated')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/trg-combined-scheduled')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pl-raw-curated-gold",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 30,
-						"startTime": "2024-03-31T16:44:00",
-						"endTime": "2024-03-31T18:18:00",
-						"timeZone": "India Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pl-raw-curated-gold')]"
 			]
 		}
 	]
