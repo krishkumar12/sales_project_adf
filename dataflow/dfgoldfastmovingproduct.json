@@ -1,0 +1,34 @@
+{
+	"name": "dfgoldfastmovingproduct",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dssilversaleparquet",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          SaleID as string,",
+				"          CustomerID as string,",
+				"          ProductID as string,",
+				"          Quantity as integer,",
+				"          SaleDate as date,",
+				"          Revenue as decimal(10,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet',",
+				"     partitionBy('hash', 1)) ~> source1"
+			]
+		}
+	}
+}

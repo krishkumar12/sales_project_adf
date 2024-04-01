@@ -1,0 +1,45 @@
+{
+	"name": "dssilversaleparquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "sales",
+				"fileSystem": "data-curated-silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "SaleID",
+				"type": "UTF8"
+			},
+			{
+				"name": "CustomerID",
+				"type": "UTF8"
+			},
+			{
+				"name": "ProductID",
+				"type": "UTF8"
+			},
+			{
+				"name": "Quantity",
+				"type": "UTF8"
+			},
+			{
+				"name": "SaleDate",
+				"type": "UTF8"
+			},
+			{
+				"name": "Revenue",
+				"type": "UTF8"
+			}
+		]
+	}
+}
