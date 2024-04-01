@@ -23,6 +23,9 @@
 			"transformations": [
 				{
 					"name": "joinsalesproduct"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
@@ -53,7 +56,17 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     partitionBy('hash', 1),",
-				"     broadcast: 'auto')~> joinsalesproduct"
+				"     broadcast: 'auto')~> joinsalesproduct",
+				"joinsalesproduct select(mapColumn(",
+				"          ProductID = srcsilversales@ProductID,",
+				"          Quantity,",
+				"          Revenue,",
+				"          productname,",
+				"          productcategory",
+				"     ),",
+				"     partitionBy('hash', 1),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1"
 			]
 		}
 	}
