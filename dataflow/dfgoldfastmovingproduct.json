@@ -80,7 +80,8 @@
 				"          Revenue = sum(Revenue),",
 				"     partitionBy('hash', 1)) ~> aggregate1",
 				"aggregate1 sort(desc(Revenue, true),",
-				"     desc(Quantity, true)) ~> sort1"
+				"     desc(Quantity, true),",
+				"     partitionBy('hash', 1)) ~> sort1"
 			]
 		}
 	}
