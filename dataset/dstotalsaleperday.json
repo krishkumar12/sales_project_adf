@@ -1,0 +1,23 @@
+{
+	"name": "dstotalsaleperday",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "lsstorageadf",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "total-sale-per-day",
+				"fileSystem": "data-processed-gold"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

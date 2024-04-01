@@ -12,7 +12,15 @@
 					"name": "srcsales"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dstotalsaleperday",
+						"type": "DatasetReference"
+					},
+					"name": "sinktotalsaleperday"
+				}
+			],
 			"transformations": [
 				{
 					"name": "totalsaleperday"
@@ -33,7 +41,14 @@
 				"     format: 'parquet',",
 				"     partitionBy('hash', 1)) ~> srcsales",
 				"srcsales aggregate(groupBy(SaleDate),",
-				"     Revenue = sum(Revenue)) ~> totalsaleperday"
+				"     Revenue = sum(Revenue)) ~> totalsaleperday",
+				"totalsaleperday sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinktotalsaleperday"
 			]
 		}
 	}
