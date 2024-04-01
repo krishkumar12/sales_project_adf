@@ -26,6 +26,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -66,7 +69,13 @@
 				"     ),",
 				"     partitionBy('hash', 1),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1"
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(groupBy(ProductID),",
+				"     productname = first(productname),",
+				"          productcategory = first(productcategory),",
+				"          Quantity = sum(Quantity),",
+				"          Revenue = sum(Revenue),",
+				"     partitionBy('hash', 1)) ~> aggregate1"
 			]
 		}
 	}
