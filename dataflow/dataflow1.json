@@ -41,7 +41,7 @@
 				"     format: 'parquet',",
 				"     partitionBy('hash', 1)) ~> srcsales",
 				"srcsales aggregate(groupBy(SaleDate),",
-				"     Revenue = sum(Revenue)) ~> totalsaleperday",
+				"     Revenue = toDecimal(sum(Revenue),8,2)) ~> totalsaleperday",
 				"totalsaleperday sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     umask: 0022,",
