@@ -1,11 +1,13 @@
 # sales_project_adf
 
-**Inputs**
+Inputs
+------
 Sales
 Product
 Customer
 
-**Outputs**
+Outputs
+-------
 Fast Moving product
 Total Sales per day
 
