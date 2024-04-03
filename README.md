@@ -1,5 +1,15 @@
 # sales_project_adf
 
+**Inputs**
+Sales
+Product
+Customer
+
+**Outputs**
+Fast Moving product
+Total Sales per day
+
+
 Dataset formats
 ---------------
 1. Delimited (csv)
