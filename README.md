@@ -1,10 +1,20 @@
+
 # sales_project_adf
+
+Sample project to use ADF, ADLS Gen2 and 
+
+To read three input files (Sales, Product, customer) and ingest, transform and Load by following medallion Architecture   (Bronze, Silver & Gold layers)
+
+Data flow
+----------
+**Step 1** : Copy the data from external landing container (data-ext-landing) to raw container (data-raw-bronze) - Used Copy data, delete activities
+
 
 Inputs
 ------
-Sales
-Product
-Customer
+Sales - Sales information of each order
+Product - Product specific data (Product ID, name, family )
+Customer - Customer data (Customer ID, name etc)
 
 Outputs
 -------
@@ -46,4 +56,4 @@ Dataflow Transformations
 6. Sort Transformation
 7. Source Transformation
 8. Sink Transformation
-9. 
+
