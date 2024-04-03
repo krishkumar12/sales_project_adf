@@ -9,7 +9,9 @@ To read three input files (Sales, Product, customer) and ingest, transform and L
 Data flow of this project
 -------------------------
 **Step 1** : Copy the csv data from external landing container (data-ext-landing) to raw container (data-raw-bronze) - Used Copy data, delete activities
+
 **Step 2** : Data from container (data-raw-bronze) are processed and pre validation like Null checks , converted the csv to parquet - Used Dataflow transformation
+
 **Step 3** : Curated data is processed, aggregated and final datasets are created that provides busines insights like (fast moving products, total Sales per day )- Used Dataflow transformation
 
 
