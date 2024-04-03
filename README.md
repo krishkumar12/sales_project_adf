@@ -1,7 +1,7 @@
 
 # sales_project_adf
 
-Sample project to use ADF, ADLS Gen2 and transformed 
+Sample project to use ADF, ADLS Gen2 and transformed into aggregated data and stored into ADLS Gen 2.
 
 To read three input files (Sales, Product, customer) and ingest, transform and Load by data following medallion Architecture   (Bronze, Silver & Gold layers)
 
