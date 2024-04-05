@@ -19,7 +19,9 @@ Data flow of this project
 Inputs
 ------
 Sales - Sales information of each order
+
 Product - Product specific data (Product ID, name, family )
+
 Customer - Customer data (Customer ID, name etc)
 
 Outputs
