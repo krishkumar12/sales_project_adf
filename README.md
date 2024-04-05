@@ -27,6 +27,7 @@ Customer - Customer data (Customer ID, name etc)
 Outputs
 -------
 1.Fast Moving product
+
 2.Total Sales per day
 
 
