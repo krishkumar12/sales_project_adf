@@ -1,5 +1,5 @@
 
-# sales_project_adf
+# sales_project_adf (Azure Data Factory)
 
 Sample project to use ADF, ADLS Gen2 and transformed into aggregated data and stored into ADLS Gen 2.
 
