@@ -26,8 +26,8 @@ Customer - Customer data (Customer ID, name etc)
 
 Outputs
 -------
-Fast Moving product
-Total Sales per day
+1.Fast Moving product
+2.Total Sales per day
 
 
 Dataset formats
